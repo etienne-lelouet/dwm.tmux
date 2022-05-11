@@ -12,9 +12,27 @@ newpane() {
     resize-pane -t :.0 -x ${mfact}%
 }
 
+# arg 1 is the name of the file to edit. No verifications because they were done before
+newpaneedit() {
+  tmux \
+    split-window -t :.0 'vim' "$1"\; \
+    swap-pane -s :.0 -t :.1\; \
+    select-layout main-vertical\; \
+    resize-pane -t :.0 -x ${mfact}%
+}
+
 newpanecurdir() {
   tmux \
     split-window -t :.0 -c "#{pane_current_path}"\; \
+    swap-pane -s :.0 -t :.1\; \
+    select-layout main-vertical\; \
+    resize-pane -t :.0 -x ${mfact}%
+}
+
+
+newpanecurdiredit() {
+  tmux \
+    split-window -t :.0 -c "#{pane_current_path}" 'vim' "$1"\; \
     swap-pane -s :.0 -t :.1\; \
     select-layout main-vertical\; \
     resize-pane -t :.0 -x ${mfact}%
@@ -84,14 +102,31 @@ if [ $# -lt 1 ]; then
 fi
 
 command=$1;shift
-set -- $(echo $(tmux display -p "#{window_panes}\n#{killlast}\n#{mfact}"))
+
+if [ $command = "newpaneedit" ] || [ $command = "newpanecurdiredit" ]; then
+	if [ -z $1 ]
+	then
+		printf "no file given"
+		exit 1
+	fi
+	file=$1
+	#if ! [ "$(echo $1 | cut -c 1)" = '/' -o "$(echo $1 | cut -c 1-2)" = "~/" ]
+	#then
+        #	file="$(tmux display -p "#{pane_current_path}")/$file"
+	#fi
+	shift
+fi
+# apparently sh has its own echo builtin which is incompatible with the debian version
+set -- $($(which echo) -e $(tmux display -p "#{window_panes}\n#{killlast}\n#{mfact}"))
 window_panes=$1
 killlast=$2
 mfact=$3
 
 case $command in
   newpane) newpane;;
+  newpaneedit) newpaneedit $file;;
   newpanecurdir) newpanecurdir;;
+  newpanecurdiredit) newpanecurdiredit $file;;
   killpane) killpane;;
   nextpane) nextpane;;
   prevpane) prevpane;;
