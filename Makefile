@@ -1,4 +1,4 @@
-PREFIX=/usr/local
+PREFIX=${HOME}/.local/
 BINDIR=${PREFIX}/bin
 LIBDIR=${PREFIX}/lib
 
