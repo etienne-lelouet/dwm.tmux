@@ -96,28 +96,19 @@ decmfact() {
   fi
 }
 
+window() {
+  window=$1
+  tmux selectw -t $window
+}
+
 if [ $# -lt 1 ]; then
   echo "dwm.tmux.sh [command]"
   exit
 fi
 
 command=$1;shift
-
-if [ $command = "newpaneedit" ] || [ $command = "newpanecurdiredit" ]; then
-	if [ -z $1 ]
-	then
-		printf "no file given"
-		exit 1
-	fi
-	file=$1
-	#if ! [ "$(echo $1 | cut -c 1)" = '/' -o "$(echo $1 | cut -c 1-2)" = "~/" ]
-	#then
-        #	file="$(tmux display -p "#{pane_current_path}")/$file"
-	#fi
-	shift
-fi
-# apparently sh has its own echo builtin which is incompatible with the debian version
-set -- $($(which echo) -e $(tmux display -p "#{window_panes}\n#{killlast}\n#{mfact}"))
+args=$*
+set -- $(tmux display -p "#{window_panes} #{killlast} #{mfact}")
 window_panes=$1
 killlast=$2
 mfact=$3
@@ -137,5 +128,6 @@ case $command in
   float) float;;
   incmfact) incmfact;;
   decmfact) decmfact;;
+  window) window $args;;
   *) echo "unknown command"; exit 1;;
 esac
